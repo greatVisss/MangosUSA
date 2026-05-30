@@ -4,13 +4,13 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -18,9 +18,11 @@ import androidx.compose.ui.unit.sp
 import com.example.mangosusa.ui.theme.MangosUSATheme
 
 class MainActivity : ComponentActivity() {
-    // Variable que guarda la lista de compras y avisa a la pantalla si hay cambios
     private var comprasState = mutableStateOf<List<CompraMango>>(emptyList())
     private lateinit var dbHelper: SqliteAuxiliar
+
+    // Nuestra meta para que se llene la barra
+    private val META_DIARIA = 150.0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,77 +32,91 @@ class MainActivity : ComponentActivity() {
             MangosUSATheme {
                 Scaffold(
                     floatingActionButton = {
-                        // Botón flotante para ir a la pantalla de agregar
                         FloatingActionButton(onClick = {
-                            val intent = Intent(this, AgregarCompraActivity::class.java)
-                            startActivity(intent)
+                            startActivity(Intent(this, AgregarCompraActivity::class.java))
                         }) {
-                            Text("+")
+                            Text("+", fontSize = 24.sp)
                         }
                     }
                 ) { padding ->
-                    PizarronUI(padding) // Llamamos a la interfaz visual
+                    DashboardUI(padding)
                 }
             }
         }
     }
 
-    // Se ejecuta al regresar a esta pantalla para recargar los datos
     override fun onResume() {
         super.onResume()
-        comprasState.value = dbHelper.getAllCompras()
+        // Carga la lista cada vez que volvemos a la pantalla
+        comprasState.value = dbHelper.getComprasDelDia()
     }
 
-    // --- DISEÑO DE LA PANTALLA ---
     @Composable
-    fun PizarronUI(padding: PaddingValues) {
+    fun DashboardUI(padding: PaddingValues) {
+        // --- LÓGICA BÁSICA PARA CALCULAR EL PROGRESO ---
+
+        // 1. Iniciamos la suma en 0
+        var totalComprado = 0.0
+
+        // 2. Sumamos las toneladas una por una usando un ciclo for clásico
+        for (compra in comprasState.value) {
+            totalComprado = totalComprado + compra.toneladas
+        }
+
+        // 3. Calculamos el porcentaje (lo que llevamos entre la meta)
+        var progreso = (totalComprado / META_DIARIA).toFloat()
+
+        // 4. Si el progreso pasa del 100% (1.0), lo topamos para que la barra no marque error
+        if (progreso > 1.0f) {
+            progreso = 1.0f
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.DarkGray) // Fondo tipo pizarrón
                 .padding(padding)
                 .padding(16.dp)
         ) {
-            Text("Pizarrón de Compras", color = Color.White, fontSize = 24.sp)
-            Spacer(modifier = Modifier.height(16.dp))
+            // TARJETA DE LA META
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text("Avance de Acopio (Hoy)", color = Color.Gray)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("$totalComprado / $META_DIARIA Toneladas", fontSize = 24.sp)
+                    Spacer(modifier = Modifier.height(16.dp))
 
-            // LazyColumn es la lista eficiente de Compose (el nuevo ListView)
+                    // La barra que se pinta sola usando la variable 'progreso'
+                    LinearProgressIndicator(
+                        progress = progreso,
+                        modifier = Modifier.fillMaxWidth().height(10.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+            Text("Operaciones del Día", fontSize = 18.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // LISTA DE NOTAS
             LazyColumn {
                 items(comprasState.value) { compra ->
-                    // Card es cada "notita"
-                    Card(
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.Yellow) // Color notita
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(text = "Proveedor: ${compra.proveedor}", color = Color.Black)
-                            Text(text = "Cantidad: ${compra.toneladas} Toneladas", color = Color.Black)
-
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            // Fila para acomodar los botones
-                            Row {
-                                Button(onClick = {
-                                    // Pasamos los datos a la otra pantalla para editarlos
-                                    val intent = Intent(this@MainActivity, AgregarCompraActivity::class.java)
-                                    intent.putExtra("ID", compra.id)
-                                    intent.putExtra("PROVEEDOR", compra.proveedor)
-                                    intent.putExtra("TONELADAS", compra.toneladas)
-                                    startActivity(intent)
+                    Card(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+                        Row(
+                            modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column {
+                                Text("Prov: ${compra.proveedor}")
+                                Text("Mango: ${compra.variedad}")
+                                Text("Estado: ${compra.estado}", color = Color.DarkGray)
+                            }
+                            Column {
+                                Text("${compra.toneladas} Ton", color = Color.Blue)
+                                IconButton(onClick = {
+                                    dbHelper.deleteCompra(compra.id)
+                                    comprasState.value = dbHelper.getComprasDelDia()
                                 }) {
-                                    Text("Editar")
-                                }
-
-                                Spacer(modifier = Modifier.width(8.dp))
-
-                                Button(
-                                    onClick = {
-                                        dbHelper.deleteCompra(compra.id) // Borra de la BD
-                                        comprasState.value = dbHelper.getAllCompras() // Actualiza la lista visual
-                                    },
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
-                                ) {
-                                    Text("Borrar")
+                                    Icon(Icons.Filled.Delete, contentDescription = "Borrar", tint = Color.Red)
                                 }
                             }
                         }

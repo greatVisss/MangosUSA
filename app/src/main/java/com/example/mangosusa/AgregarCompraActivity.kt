@@ -30,19 +30,19 @@ class AgregarCompraActivity : ComponentActivity() {
 
 @Composable
 fun Formulario(activity: Activity) {
-    // Recibimos los datos (si viene vacío, idEdit será -1, lo que significa que es NUEVO)
-    val intent = activity.intent
-    val idEdit = intent.getIntExtra("ID", -1)
     val dbHelper = SqliteAuxiliar(activity)
 
-    // Variables que guardan lo que escribimos en pantalla
-    var proveedor by remember { mutableStateOf(intent.getStringExtra("PROVEEDOR") ?: "") }
-    var toneladas by remember { mutableStateOf(if (idEdit != -1) intent.getDoubleExtra("TONELADAS", 0.0).toString() else "") }
-    var error by remember { mutableStateOf("") }
+    // Cuatro variables simples para capturar el texto
+    var proveedor by remember { mutableStateOf("") }
+    var variedad by remember { mutableStateOf("") }
+    var toneladas by remember { mutableStateOf("") }
+    var estado by remember { mutableStateOf("") }
 
-    Column(modifier = Modifier.padding(16.dp)) {
-        Text("Notita de Compra", style = MaterialTheme.typography.headlineMedium)
-        Spacer(modifier = Modifier.height(16.dp))
+    var mensajeError by remember { mutableStateOf("") }
+
+    Column(modifier = Modifier.padding(24.dp)) {
+        Text("Nueva Etiqueta", style = MaterialTheme.typography.headlineMedium)
+        Spacer(modifier = Modifier.height(24.dp))
 
         OutlinedTextField(
             value = proveedor,
@@ -53,42 +53,58 @@ fun Formulario(activity: Activity) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // CÓDIGO PRINCIPIANTE: En lugar de un menú desplegable, usamos campos de texto normales
+        OutlinedTextField(
+            value = variedad,
+            onValueChange = { variedad = it },
+            label = { Text("Variedad de Mango (Ej. Ataulfo)") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
         OutlinedTextField(
             value = toneladas,
             onValueChange = { toneladas = it },
-            label = { Text("Toneladas") },
+            label = { Text("Toneladas (Ej. 15.5)") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier.fillMaxWidth()
         )
 
-        Text(text = error, color = Color.Red) // Aquí se muestra el mensaje si algo sale mal
+        Spacer(modifier = Modifier.height(8.dp))
 
-        Spacer(modifier = Modifier.height(16.dp))
+        OutlinedTextField(
+            value = estado,
+            onValueChange = { estado = it },
+            label = { Text("Estado (En tránsito, En planta...)") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        // Etiqueta para mostrar errores de validación
+        Text(text = mensajeError, color = Color.Red, modifier = Modifier.padding(top = 8.dp))
+
+        Spacer(modifier = Modifier.height(24.dp))
 
         Button(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().height(50.dp),
             onClick = {
-                // Convertimos el texto a número. Si mete letras, validador será null
-                val validador = toneladas.toDoubleOrNull()
+                // Revisamos si las toneladas son números válidos
+                val tonValidadas = toneladas.toDoubleOrNull()
 
-                if (proveedor.isEmpty() || toneladas.isEmpty()) {
-                    error = "Llena todos los campos"
-                } else if (validador == null) {
-                    error = "Pon un número válido para las toneladas"
+                // Verificamos que no haya campos vacíos
+                if (proveedor.isEmpty() || variedad.isEmpty() || toneladas.isEmpty() || estado.isEmpty()) {
+                    mensajeError = "Por favor, llena todos los campos."
+                } else if (tonValidadas == null) {
+                    mensajeError = "Las toneladas deben ser un número válido."
                 } else {
-                    // Decidimos si hacemos INSERT o UPDATE
-                    if (idEdit == -1) {
-                        dbHelper.insertCompra(proveedor, validador)
-                        Toast.makeText(activity, "Guardado", Toast.LENGTH_SHORT).show()
-                    } else {
-                        dbHelper.updateCompra(idEdit, proveedor, validador)
-                        Toast.makeText(activity, "Actualizado", Toast.LENGTH_SHORT).show()
-                    }
-                    activity.finish() // Cierra esta pantalla y regresa al pizarrón
+                    // Si todo está bien, mandamos a guardar a la base de datos
+                    dbHelper.insertCompra(proveedor, variedad, tonValidadas, estado)
+                    Toast.makeText(activity, "Compra registrada", Toast.LENGTH_SHORT).show()
+                    activity.finish() // Cierra la pantalla
                 }
             }
         ) {
-            Text("Guardar Notita")
+            Text("Guardar Compra")
         }
     }
 }
