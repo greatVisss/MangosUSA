@@ -1,4 +1,4 @@
-package com.example.mangosusa
+package com.example.mangosusa // Usa tu paquete
 
 import android.app.Activity
 import android.os.Bundle
@@ -10,9 +10,10 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.mangosusa.ui.theme.MangosUSATheme
 
 class AgregarCompraActivity : ComponentActivity() {
@@ -32,79 +33,84 @@ class AgregarCompraActivity : ComponentActivity() {
 fun Formulario(activity: Activity) {
     val dbHelper = SqliteAuxiliar(activity)
 
-    // Cuatro variables simples para capturar el texto
     var proveedor by remember { mutableStateOf("") }
     var variedad by remember { mutableStateOf("") }
     var toneladas by remember { mutableStateOf("") }
     var estado by remember { mutableStateOf("") }
-
-    var mensajeError by remember { mutableStateOf("") }
+    var error by remember { mutableStateOf("") }
 
     Column(modifier = Modifier.padding(24.dp)) {
-        Text("Nueva Etiqueta", style = MaterialTheme.typography.headlineMedium)
+        // Título Material 3 más grande y profesional
+        Text("Registrar Compra Agropecuaria", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(24.dp))
 
+        // NUEVO: Campos estilizados y mejor espaciado
         OutlinedTextField(
             value = proveedor,
             onValueChange = { proveedor = it },
-            label = { Text("Proveedor") },
-            modifier = Modifier.fillMaxWidth()
+            label = { Text("Sector/Proveedor") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        // CÓDIGO PRINCIPIANTE: En lugar de un menú desplegable, usamos campos de texto normales
         OutlinedTextField(
             value = variedad,
             onValueChange = { variedad = it },
-            label = { Text("Variedad de Mango (Ej. Ataulfo)") },
-            modifier = Modifier.fillMaxWidth()
+            label = { Text("Variedad de Mango (Ej. Manila)") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
             value = toneladas,
             onValueChange = { toneladas = it },
-            label = { Text("Toneladas (Ej. 15.5)") },
+            label = { Text("Toneladas") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            // NUEVO: Suffix para indicar la unidad de medida
+            suffix = { Text("Ton") }
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
             value = estado,
             onValueChange = { estado = it },
-            label = { Text("Estado (En tránsito, En planta...)") },
-            modifier = Modifier.fillMaxWidth()
+            label = { Text("Estado Logístico (Ej. En tránsito)") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
         )
 
-        // Etiqueta para mostrar errores de validación
-        Text(text = mensajeError, color = Color.Red, modifier = Modifier.padding(top = 8.dp))
+        // Uso del color de error del tema native de M3
+        if (error.isNotEmpty()) {
+            Text(text = error, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 8.dp))
+        }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.weight(1f)) // Empuja el botón hacia abajo
 
+        // NUEVO: Botón más grande y corporativo
         Button(
-            modifier = Modifier.fillMaxWidth().height(50.dp),
+            modifier = Modifier.fillMaxWidth().height(56.dp),
             onClick = {
-                // Revisamos si las toneladas son números válidos
                 val tonValidadas = toneladas.toDoubleOrNull()
 
-                // Verificamos que no haya campos vacíos
                 if (proveedor.isEmpty() || variedad.isEmpty() || toneladas.isEmpty() || estado.isEmpty()) {
-                    mensajeError = "Por favor, llena todos los campos."
-                } else if (tonValidadas == null) {
-                    mensajeError = "Las toneladas deben ser un número válido."
+                    error = "Llena todos los campos."
+                } else if (tonValidadas == null || tonValidadas <= 0) {
+                    error = "Ingresa una cantidad de toneladas válida."
                 } else {
-                    // Si todo está bien, mandamos a guardar a la base de datos
                     dbHelper.insertCompra(proveedor, variedad, tonValidadas, estado)
                     Toast.makeText(activity, "Compra registrada", Toast.LENGTH_SHORT).show()
-                    activity.finish() // Cierra la pantalla
+                    activity.finish()
                 }
             }
         ) {
-            Text("Guardar Compra")
+            Text("Registrar Compra", fontSize = 16.sp)
         }
     }
 }
