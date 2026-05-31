@@ -31,7 +31,7 @@ import com.example.mangosusa.ui.theme.MangosUSATheme
 
 class MainActivity : ComponentActivity() {
     private var comprasState = mutableStateOf<List<CompraMango>>(emptyList())
-    private lateinit var dbHelper: SqliteAuxiliar
+    private lateinit var dbHelper: SqliteAuxiliar //Esta variable es para hacer una inicializacion tardía de la base de datos, esto ya que android studio no se puede conectar a la bd en el mismo instante que la aplicacion arranca
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,7 +60,6 @@ class MainActivity : ComponentActivity() {
         comprasState.value = dbHelper.getComprasDelDia()
     }
 
-    // --- CÓDIGO PRINCIPIANTE: Funciones para la mini-memoria (SharedPreferences) ---
     private fun guardarMetaEnTelefono(meta: Float) {
         val preferencias = getSharedPreferences("AjustesMangos", Context.MODE_PRIVATE)
         val editor = preferencias.edit()
@@ -69,8 +68,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun leerMetaDelTelefono(): Double {
-        val preferencias = getSharedPreferences("AjustesMangos", Context.MODE_PRIVATE)
-        return preferencias.getFloat("META_DIARIA", 150.0f).toDouble()
+        return getSharedPreferences("AjustesMangos", Context.MODE_PRIVATE).getFloat("META_DIARIA", 150.0f).toDouble()
     }
 
     @Composable
