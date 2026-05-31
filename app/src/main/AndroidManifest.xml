@@ -22,6 +22,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".AgregarCompraActivity" />
+        <activity android:name=".AgregarProveedorActivity" />
     </application>
 
 </manifest>

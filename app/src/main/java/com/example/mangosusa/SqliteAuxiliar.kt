@@ -12,64 +12,98 @@ data class CompraMango(
     val proveedor: String,
     val variedad: String,
     val toneladas: Double,
+    val costo: Double,
+    val tamano: String,
+    val madurez: String,
     val fecha: String,
     val estado: String
 )
 
-class SqliteAuxiliar(contexto: Context) : SQLiteOpenHelper(contexto, "MangosDB.sqlite", null, 3) {
+class SqliteAuxiliar(contexto: Context) : SQLiteOpenHelper(contexto, "MangosDB.sqlite", null, 7) {
 
     override fun onCreate(db: SQLiteDatabase?) {
-        val query = "CREATE TABLE compras (id INTEGER PRIMARY KEY AUTOINCREMENT, proveedor TEXT, variedad TEXT, toneladas REAL, fecha TEXT, estado TEXT)"
-        db?.execSQL(query)
+        // 1. Tabla de compras
+        val queryCompras = "CREATE TABLE compras (id INTEGER PRIMARY KEY AUTOINCREMENT, proveedor TEXT, variedad TEXT, toneladas REAL, costo REAL, tamano TEXT, madurez TEXT, fecha TEXT, estado TEXT)"
+        db?.execSQL(queryCompras)
+
+        // 2. NUEVA TABLA: Proveedores
+        val queryProveedores = "CREATE TABLE proveedores (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT)"
+        db?.execSQL(queryProveedores)
+
+        // 3. Insertamos un proveedor de prueba para que la lista no empiece vacía
+        db?.execSQL("INSERT INTO proveedores (nombre) VALUES ('Huerta San José')")
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
         db?.execSQL("DROP TABLE IF EXISTS compras")
+        db?.execSQL("DROP TABLE IF EXISTS proveedores")
         onCreate(db)
     }
 
-    // --- CÓDIGO PRINCIPIANTE: Inserción paso a paso ---
-    fun insertCompra(proveedor: String, variedad: String, toneladas: Double, estado: String) {
+    // --- FUNCIONES PARA LA NUEVA TABLA DE PROVEEDORES ---
+    fun insertProveedor(nombre: String) {
         val db = this.writableDatabase
-
-        // 1. Obtenemos la fecha de hoy en texto simple
-        val fechaHoy = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
-
-        // 2. Preparamos la consulta con los signos de interrogación
-        val sql = "INSERT INTO compras (proveedor, variedad, toneladas, fecha, estado) VALUES (?, ?, ?, ?, ?)"
+        val sql = "INSERT INTO proveedores (nombre) VALUES (?)"
         val statement = db.compileStatement(sql)
-
-        // 3. Asignamos cada valor en su posición
-        statement.bindString(1, proveedor)
-        statement.bindString(2, variedad)
-        statement.bindDouble(3, toneladas)
-        statement.bindString(4, fechaHoy)
-        statement.bindString(5, estado)
-
+        statement.bindString(1, nombre)
         statement.executeInsert()
         db.close()
     }
 
-    // --- CÓDIGO PRINCIPIANTE: Lectura de las compras de hoy ---
+    fun getProveedores(): List<String> {
+        val lista = mutableListOf<String>()
+        val db = this.readableDatabase
+        val cursor = db.rawQuery("SELECT nombre FROM proveedores", null)
+        while (cursor.moveToNext()) {
+            lista.add(cursor.getString(0))
+        }
+        cursor.close()
+        db.close()
+        return lista
+    }
+    // ----------------------------------------------------
+
+    // --- FUNCIONES DE COMPRAS (Se quedan igual) ---
+    fun insertCompra(proveedor: String, variedad: String, toneladas: Double, costo: Double, tamano: String, madurez: String, estado: String) {
+        val db = this.writableDatabase
+        val fechaHoy = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
+        val sql = "INSERT INTO compras (proveedor, variedad, toneladas, costo, tamano, madurez, fecha, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+        val statement = db.compileStatement(sql)
+        statement.bindString(1, proveedor)
+        statement.bindString(2, variedad)
+        statement.bindDouble(3, toneladas)
+        statement.bindDouble(4, costo)
+        statement.bindString(5, tamano)
+        statement.bindString(6, madurez)
+        statement.bindString(7, fechaHoy)
+        statement.bindString(8, estado)
+        statement.executeInsert()
+        db.close()
+    }
+
+    fun updateCompra(id: Int, proveedor: String, variedad: String, toneladas: Double, costo: Double, tamano: String, madurez: String, estado: String) {
+        val db = this.writableDatabase
+        val sql = "UPDATE compras SET proveedor = ?, variedad = ?, toneladas = ?, costo = ?, tamano = ?, madurez = ?, estado = ? WHERE id = ?"
+        val statement = db.compileStatement(sql)
+        statement.bindString(1, proveedor)
+        statement.bindString(2, variedad)
+        statement.bindDouble(3, toneladas)
+        statement.bindDouble(4, costo)
+        statement.bindString(5, tamano)
+        statement.bindString(6, madurez)
+        statement.bindString(7, estado)
+        statement.bindLong(8, id.toLong())
+        statement.executeUpdateDelete()
+        db.close()
+    }
+
     fun getComprasDelDia(): List<CompraMango> {
         val lista = mutableListOf<CompraMango>()
         val db = this.readableDatabase
         val fechaHoy = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
-
-        // Buscamos solo donde la columna fecha coincida con la fecha de hoy
         val cursor = db.rawQuery("SELECT * FROM compras WHERE fecha = ?", arrayOf(fechaHoy))
-
         while (cursor.moveToNext()) {
-            lista.add(
-                CompraMango(
-                    id = cursor.getInt(0),
-                    proveedor = cursor.getString(1),
-                    variedad = cursor.getString(2),
-                    toneladas = cursor.getDouble(3),
-                    fecha = cursor.getString(4),
-                    estado = cursor.getString(5)
-                )
-            )
+            lista.add(CompraMango(cursor.getInt(0), cursor.getString(1), cursor.getString(2), cursor.getDouble(3), cursor.getDouble(4), cursor.getString(5), cursor.getString(6), cursor.getString(7), cursor.getString(8)))
         }
         cursor.close()
         db.close()
