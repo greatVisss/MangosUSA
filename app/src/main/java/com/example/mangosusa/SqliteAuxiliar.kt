@@ -8,29 +8,17 @@ import java.util.Date
 import java.util.Locale
 
 // --- MODELOS DE DATOS ---
-data class CompraMango(
-    val id: Int, val proveedor: String, val variedad: String,
-    val toneladas: Double, val costo: Double, val tamano: String,
-    val madurez: String, val fecha: String, val estado: String,
-    val hora: String // NUEVO: Agregamos la hora al modelo
-)
+data class CompraMango(val id: Int, val proveedor: String, val variedad: String, val toneladas: Double, val costo: Double, val tamano: String, val madurez: String, val fecha: String, val estado: String, val hora: String)
+data class ProveedorInfo(val id: Int, val nombre: String, val ubicacion: String, val encargado: String, val telefono: String)
 
-data class ProveedorInfo(
-    val id: Int, val nombre: String, val ubicacion: String,
-    val encargado: String, val telefono: String
-)
-
-// Subimos la versión a 9 para aplicar los cambios
 class SqliteAuxiliar(contexto: Context) : SQLiteOpenHelper(contexto, "MangosDB.sqlite", null, 9) {
 
     override fun onCreate(db: SQLiteDatabase?) {
-        // NUEVO: Agregamos "hora TEXT" al final de la tabla de compras
         val queryCompras = "CREATE TABLE compras (id INTEGER PRIMARY KEY AUTOINCREMENT, proveedor TEXT, variedad TEXT, toneladas REAL, costo REAL, tamano TEXT, madurez TEXT, fecha TEXT, estado TEXT, hora TEXT)"
         db?.execSQL(queryCompras)
-
         val queryProveedores = "CREATE TABLE proveedores (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT, ubicacion TEXT, encargado TEXT, telefono TEXT)"
         db?.execSQL(queryProveedores)
-
+        // esta es la parte donde se guardan los datos de los proveedores
         db?.execSQL("INSERT INTO proveedores (nombre, ubicacion, encargado, telefono) VALUES ('Huerta San José', 'Michoacán', 'José Pérez', '555-1234'), ('Huerta Mría', 'Oaxaca', 'Maria Delfina', '555-98456')")
     }
 
@@ -40,9 +28,7 @@ class SqliteAuxiliar(contexto: Context) : SQLiteOpenHelper(contexto, "MangosDB.s
         onCreate(db)
     }
 
-    // ==========================================
-    //        FUNCIONES DE PROVEEDORES
-    // ==========================================
+    // aqui se hacen las funciones del proveedor
     fun insertProveedor(nombre: String, ubicacion: String, encargado: String, telefono: String) {
         val db = this.writableDatabase
         val sql = "INSERT INTO proveedores (nombre, ubicacion, encargado, telefono) VALUES (?, ?, ?, ?)"
@@ -100,20 +86,13 @@ class SqliteAuxiliar(contexto: Context) : SQLiteOpenHelper(contexto, "MangosDB.s
         return lista
     }
 
-    // ==========================================
-    //        FUNCIONES DE COMPRAS
-    // ==========================================
+    // aqui se hacen las funciones del compra
     fun insertCompra(proveedor: String, variedad: String, toneladas: Double, costo: Double, tamano: String, madurez: String, estado: String) {
         val db = this.writableDatabase
-
-        // Obtenemos la Fecha y la Hora actuales automáticamente
         val fechaHoy = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
-        val horaActual = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()) // NUEVO
-
-        // Agregamos la columna 'hora' al código SQL
+        val horaActual = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
         val sql = "INSERT INTO compras (proveedor, variedad, toneladas, costo, tamano, madurez, fecha, estado, hora) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
         val statement = db.compileStatement(sql)
-
         statement.bindString(1, proveedor)
         statement.bindString(2, variedad)
         statement.bindDouble(3, toneladas)
@@ -122,7 +101,7 @@ class SqliteAuxiliar(contexto: Context) : SQLiteOpenHelper(contexto, "MangosDB.s
         statement.bindString(6, madurez)
         statement.bindString(7, fechaHoy)
         statement.bindString(8, estado)
-        statement.bindString(9, horaActual) // NUEVO: Guardamos la hora
+        statement.bindString(9, horaActual)
 
         statement.executeInsert()
         db.close()
@@ -162,7 +141,7 @@ class SqliteAuxiliar(contexto: Context) : SQLiteOpenHelper(contexto, "MangosDB.s
                 madurez = cursor.getString(6),
                 fecha = cursor.getString(7),
                 estado = cursor.getString(8),
-                hora = cursor.getString(9) // NUEVO: Leemos la hora de la base de datos
+                hora = cursor.getString(9)
             ))
         }
         cursor.close()
