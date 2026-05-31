@@ -16,14 +16,18 @@
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.MangosUSA">
+        </activity>
+        <activity android:name=".AgregarCompraActivity" />
+        <activity android:name=".AgregarProveedorActivity" />
+        <activity android:name=".DirectorioProveedoresActivity" />
+        <activity
+            android:name=".InicioActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".AgregarCompraActivity" />
-        <activity android:name=".AgregarProveedorActivity" />
-        <activity android:name=".DirectorioProveedoresActivity" />
     </application>
 
 </manifest>
