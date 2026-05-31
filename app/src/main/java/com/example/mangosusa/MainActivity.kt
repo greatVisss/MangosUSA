@@ -232,7 +232,7 @@ class MainActivity : ComponentActivity() {
                                             intent.putExtra("ESTADO", compra.estado)
                                             startActivity(intent)
                                         }) {
-                                            Icon(Icons.Filled.Edit, contentDescription = "Editarr", tint = Color.Gray)
+                                            Icon(Icons.Filled.Edit, contentDescription = "Editar", tint = Color.Gray)
                                         }
 
                                         IconButton(onClick = {
