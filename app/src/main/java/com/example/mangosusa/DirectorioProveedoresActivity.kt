@@ -48,6 +48,7 @@ class DirectorioProveedoresActivity : ComponentActivity() {
     @Composable
     fun PantallaDirectorio(activity: Activity) {
         Column(modifier = Modifier.padding(16.dp)) {
+            Spacer(modifier = Modifier.height(26.dp))
             Text("Directorio de Huertos", fontSize = 24.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(16.dp))
 

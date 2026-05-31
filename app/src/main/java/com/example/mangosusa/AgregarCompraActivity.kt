@@ -53,48 +53,49 @@ fun Formulario(activity: Activity, listaProveedores: List<String>) {
     val intent = activity.intent
     val idEdit = intent.getIntExtra("ID", -1)
 
-    // --- VARIABLES DE LISTAS DESPLEGABLES ---
+    // Aqui estan las listas desplegables
 
-    // 1. PROVEEDORES
+    // 1. proveedores
     var proveedorExpandido by remember { mutableStateOf(false) }
     val proveedorGuardado = intent.getStringExtra("PROVEEDOR")
     var proveedorSeleccionado by remember { mutableStateOf(if (proveedorGuardado.isNullOrEmpty()) "Seleciona una opción" else proveedorGuardado) }
 
-    // 2. VARIEDAD
+    // 2. variedad del mango
     var variedadExpandida by remember { mutableStateOf(false) }
     val variedadGuardada = intent.getStringExtra("VARIEDAD")
     var variedadSeleccionada by remember { mutableStateOf(if (variedadGuardada.isNullOrEmpty()) "Seleciona una opción" else variedadGuardada) }
 
-    // 3. TAMAÑO
+    // 3. tamaño del mango
     var tamanoExpandido by remember { mutableStateOf(false) }
     val tamanoGuardado = intent.getStringExtra("TAMANO")
     var tamanoSeleccionado by remember { mutableStateOf(if (tamanoGuardado.isNullOrEmpty()) "Seleciona una opción" else tamanoGuardado) }
 
-    // 4. MADUREZ
+    // 4. madruez del mango
     var madurezExpandida by remember { mutableStateOf(false) }
     val madurezGuardada = intent.getStringExtra("MADUREZ")
     var madurezSeleccionada by remember { mutableStateOf(if (madurezGuardada.isNullOrEmpty()) "Seleciona una opción" else madurezGuardada) }
 
-    // 5. NUEVO: ESTADO LOGÍSTICO
+    // 5. estado logistico del proceso
     val listaEstados = listOf("Por Pagar", "Pagado", "Por Recolectar por parte del Transportista", "En Proceso de Envio", "En Proceso de Recepción", "Recepcion Completada", "Completadoo")
     var estadoExpandido by remember { mutableStateOf(false) }
     val estadoGuardado = intent.getStringExtra("ESTADO")
     var estadoSeleccionado by remember { mutableStateOf(if (estadoGuardado.isNullOrEmpty()) "Seleciona una opción" else estadoGuardado) }
 
-    // --- TEXTOS NORMALES ---
+    // Texto afuera de las listas
     var toneladas by remember { mutableStateOf(if (idEdit != -1) intent.getDoubleExtra("TONELADAS", 0.0).toString() else "") }
     var costo by remember { mutableStateOf(if (idEdit != -1) intent.getDoubleExtra("COSTO", 0.0).toString() else "") }
     var error by remember { mutableStateOf("") }
 
-    val listaVariedades = listOf("Ataulfo", "Manila", "Tommy Atkins", "Keitt", "Kent", "Haden", "Alphonso")
+    val listaVariedades = listOf("Ataulfo", "Manila", "Tommy Atkins", "Keitt", "Kent", "Haden", "Alphonso", "Mingolo", "Edward", "Francis", "Kesar", "Palmer")
     val listaTamanos = listOf("Chico", "Mediano", "Grande")
     val listaMadurez = listOf("Verde", "Pintón", "Maduro")
 
     Column(modifier = Modifier.padding(24.dp).verticalScroll(rememberScrollState())) {
-        Text(if (idEdit != -1) "Modificar Compra" else "Registrar Compra", fontSize = 24.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(24.dp))
+        Text(if (idEdit != -1) "Modificar Compra" else "Registrar Compra", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(24.dp), )
 
-        // SECTOR / PROVEEDOR
+        // proveedor de los mangos
         Text("Sector/Proveedor:", color = Color.Gray, fontSize = 14.sp)
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedButton(onClick = { proveedorExpandido = true }, modifier = Modifier.fillMaxWidth()) {
@@ -121,7 +122,7 @@ fun Formulario(activity: Activity, listaProveedores: List<String>) {
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // VARIEDAD
+        // Variedad de los mangos
         Text("Variedad de Mango:", color = Color.Gray, fontSize = 14.sp)
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedButton(onClick = { variedadExpandida = true }, modifier = Modifier.fillMaxWidth()) {
@@ -135,7 +136,7 @@ fun Formulario(activity: Activity, listaProveedores: List<String>) {
         }
         Spacer(modifier = Modifier.height(10.dp))
 
-        // TAMAÑO
+        // Tamaño de los mangos
         Text("Tamaño del Mango:", color = Color.Gray, fontSize = 14.sp)
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedButton(onClick = { tamanoExpandido = true }, modifier = Modifier.fillMaxWidth()) {
@@ -149,7 +150,7 @@ fun Formulario(activity: Activity, listaProveedores: List<String>) {
         }
         Spacer(modifier = Modifier.height(10.dp))
 
-        // MADUREZ
+        // Madurez del mango
         Text("Madurez del Mango:", color = Color.Gray, fontSize = 14.sp)
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedButton(onClick = { madurezExpandida = true }, modifier = Modifier.fillMaxWidth()) {
@@ -163,7 +164,7 @@ fun Formulario(activity: Activity, listaProveedores: List<String>) {
         }
         Spacer(modifier = Modifier.height(10.dp))
 
-        // NUEVO: LISTA DE ESTADO LOGÍSTICO (Sustituye al OutlinedTextField de antes)
+        // Lista del estado logístico de la compra
         Text("Estado Logístico:", color = Color.Gray, fontSize = 14.sp)
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedButton(onClick = { estadoExpandido = true }, modifier = Modifier.fillMaxWidth()) {
@@ -177,7 +178,7 @@ fun Formulario(activity: Activity, listaProveedores: List<String>) {
         }
         Spacer(modifier = Modifier.height(10.dp))
 
-        // TONELADAS
+        // toneladas de mangos
         OutlinedTextField(
             value = toneladas,
             onValueChange = { toneladas = it },
@@ -187,7 +188,7 @@ fun Formulario(activity: Activity, listaProveedores: List<String>) {
         )
         Spacer(modifier = Modifier.height(10.dp))
 
-        // COSTO
+        // Costo de los mangos
         OutlinedTextField(
             value = costo,
             onValueChange = { costo = it },
@@ -200,7 +201,7 @@ fun Formulario(activity: Activity, listaProveedores: List<String>) {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // BOTÓN DE GUARDAR
+        // Botón de guardar la informacion de compra
         Button(
             modifier = Modifier.fillMaxWidth().height(50.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2)),
@@ -214,11 +215,11 @@ fun Formulario(activity: Activity, listaProveedores: List<String>) {
                     error = "Ingresa números válidos en Toneladas y Costo."
                 } else {
                     if (idEdit == -1) {
-                        // Enviamos a la BD el estado que se haya seleccionado en la lista
+                        // Se envía a la BD el estado que se haya seleccionado en la lista y este caso es para hacer un registro de compra
                         dbHelper.insertCompra(proveedorSeleccionado, variedadSeleccionada, tonValidadas, costoValidado, tamanoSeleccionado, madurezSeleccionada, estadoSeleccionado)
                         Toast.makeText(activity, "Guardado exitosamente", Toast.LENGTH_SHORT).show()
                     } else {
-                        // Enviamos a la BD el estado que se haya seleccionado en la lista
+                        // Este es lo mismo que el anterior, solo que en este es en la pestaña de actualizar la compra
                         dbHelper.updateCompra(idEdit, proveedorSeleccionado, variedadSeleccionada, tonValidadas, costoValidado, tamanoSeleccionado, madurezSeleccionada, estadoSeleccionado)
                         Toast.makeText(activity, "Actualizado exitosamente", Toast.LENGTH_SHORT).show()
                     }
@@ -228,16 +229,16 @@ fun Formulario(activity: Activity, listaProveedores: List<String>) {
         ) {
                 if (idEdit != -1) {
                     Icon(
-                        imageVector = Icons.Filled.Refresh, // Es el ícono de un círculo con un símbolo de '+'
+                        imageVector = Icons.Filled.Refresh,
                         contentDescription = "Registrar",
-                        modifier = Modifier.size(40.dp), // Lo hacemos grande (40.dp) para que parezca un título
+                        modifier = Modifier.size(40.dp),
                     )
                 } else {
                     // en vez de usar el texto se colca un icno de agregar
                     Icon(
-                        imageVector = Icons.Filled.AddCircle, // Es el ícono de un círculo con un símbolo de '+'
+                        imageVector = Icons.Filled.AddCircle,
                         contentDescription = "Registrar",
-                        modifier = Modifier.size(40.dp), // Lo hacemos grande (40.dp) para que parezca un título
+                        modifier = Modifier.size(40.dp),
                     )
                 }
 
