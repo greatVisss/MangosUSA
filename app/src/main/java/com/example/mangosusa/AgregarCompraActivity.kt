@@ -1,15 +1,19 @@
-package com.example.mangosusa // Usa tu paquete
+package com.example.mangosusa
 
 import android.app.Activity
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -21,7 +25,7 @@ class AgregarCompraActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MangosUSATheme {
-                Surface(modifier = Modifier.fillMaxSize()) {
+                Surface(modifier = Modifier.fillMaxSize().background(Color(0xFFEFEFEF))) {
                     Formulario(this)
                 }
             }
@@ -33,84 +37,181 @@ class AgregarCompraActivity : ComponentActivity() {
 fun Formulario(activity: Activity) {
     val dbHelper = SqliteAuxiliar(activity)
 
-    var proveedor by remember { mutableStateOf("") }
-    var variedad by remember { mutableStateOf("") }
-    var toneladas by remember { mutableStateOf("") }
-    var estado by remember { mutableStateOf("") }
+    val intent = activity.intent
+    val idEdit = intent.getIntExtra("ID", -1)
+
+    var proveedor by remember { mutableStateOf(intent.getStringExtra("PROVEEDOR") ?: "") }
+    var estado by remember { mutableStateOf(intent.getStringExtra("ESTADO") ?: "") }
+    var toneladas by remember { mutableStateOf(if (idEdit != -1) intent.getDoubleExtra("TONELADAS", 0.0).toString() else "") }
+    var costo by remember { mutableStateOf(if (idEdit != -1) intent.getDoubleExtra("COSTO", 0.0).toString() else "") }
     var error by remember { mutableStateOf("") }
 
-    Column(modifier = Modifier.padding(24.dp)) {
-        // Título Material 3 más grande y profesional
-        Text("Registrar Compra Agropecuaria", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+    // --- LISTA DESPLEGABLE: VARIEDAD DE MANGOS ---
+    val listaVariedades = listOf(
+        "Ataulfo", "Manila", "Tommy Atkins", "Keitt", "Kent",
+        "Haden", "Alphonso", "Palmer", "Carabao", "Osteen",
+        "Nam Dok Mai", "Edward", "Kesar", "Francine"
+    )
+    var variedadExpandida by remember { mutableStateOf(false) }
+    // Si la pantalla recibe una variedad para editar la usa, si no, pone "Ataulfo" por defecto
+    val variedadGuardada = intent.getStringExtra("VARIEDAD")
+    var variedadSeleccionada by remember { mutableStateOf(if (variedadGuardada.isNullOrEmpty()) "Ataulfo" else variedadGuardada) }
+
+    // --- LISTA DESPLEGABLE: TAMAÑO ---
+    val listaTamanos = listOf("Chico", "Mediano", "Grande")
+    var tamanoExpandido by remember { mutableStateOf(false) }
+    val tamanoGuardado = intent.getStringExtra("TAMANO")
+    var tamanoSeleccionado by remember { mutableStateOf(if (tamanoGuardado.isNullOrEmpty()) "Mediano" else tamanoGuardado) }
+
+    // --- LISTA DESPLEGABLE: MADUREZ ---
+    val listaMadurez = listOf("Verde", "Medio", "Maduro")
+    var madurezExpandida by remember { mutableStateOf(false) }
+    val madurezGuardada = intent.getStringExtra("MADUREZ")
+    var madurezSeleccionada by remember { mutableStateOf(if (madurezGuardada.isNullOrEmpty()) "Verde" else madurezGuardada) }
+
+    Column(modifier = Modifier.padding(24.dp).verticalScroll(rememberScrollState())) {
+        Text(if (idEdit != -1) "Modificar Compra" else "Registrar Compra", fontSize = 24.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(24.dp))
 
-        // NUEVO: Campos estilizados y mejor espaciado
         OutlinedTextField(
             value = proveedor,
             onValueChange = { proveedor = it },
             label = { Text("Sector/Proveedor") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
+            modifier = Modifier.fillMaxWidth()
         )
+        Spacer(modifier = Modifier.height(10.dp))
 
-        Spacer(modifier = Modifier.height(16.dp))
+        // --- CÓDIGO DE LA NUEVA LISTA DE VARIEDADES ---
+        Text("Variedad de Mango:", color = Color.Gray, fontSize = 14.sp)
+        Box(modifier = Modifier.fillMaxWidth()) {
+            OutlinedButton(
+                onClick = { variedadExpandida = true },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(variedadSeleccionada)
+            }
+            // Jetpack Compose hace que esta lista tenga "scroll" automático hacia abajo si es muy larga
+            DropdownMenu(
+                expanded = variedadExpandida,
+                onDismissRequest = { variedadExpandida = false }
+            ) {
+                listaVariedades.forEach { opcion ->
+                    DropdownMenuItem(
+                        text = { Text(opcion) },
+                        onClick = {
+                            variedadSeleccionada = opcion
+                            variedadExpandida = false
+                        }
+                    )
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(10.dp))
 
-        OutlinedTextField(
-            value = variedad,
-            onValueChange = { variedad = it },
-            label = { Text("Variedad de Mango (Ej. Manila)") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
+        Text("Tamaño del Mango:", color = Color.Gray, fontSize = 14.sp)
+        Box(modifier = Modifier.fillMaxWidth()) {
+            OutlinedButton(
+                onClick = { tamanoExpandido = true },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(tamanoSeleccionado)
+            }
+            DropdownMenu(
+                expanded = tamanoExpandido,
+                onDismissRequest = { tamanoExpandido = false }
+            ) {
+                listaTamanos.forEach { opcion ->
+                    DropdownMenuItem(
+                        text = { Text(opcion) },
+                        onClick = {
+                            tamanoSeleccionado = opcion
+                            tamanoExpandido = false
+                        }
+                    )
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(10.dp))
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Text("Madurez del Mango:", color = Color.Gray, fontSize = 14.sp)
+        Box(modifier = Modifier.fillMaxWidth()) {
+            OutlinedButton(
+                onClick = { madurezExpandida = true },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(madurezSeleccionada)
+            }
+            DropdownMenu(
+                expanded = madurezExpandida,
+                onDismissRequest = { madurezExpandida = false }
+            ) {
+                listaMadurez.forEach { opcion ->
+                    DropdownMenuItem(
+                        text = { Text(opcion) },
+                        onClick = {
+                            madurezSeleccionada = opcion
+                            madurezExpandida = false
+                        }
+                    )
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(10.dp))
 
         OutlinedTextField(
             value = toneladas,
             onValueChange = { toneladas = it },
-            label = { Text("Toneladas") },
+            label = { Text("Toneladas (Ej. 10.5)") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            // NUEVO: Suffix para indicar la unidad de medida
-            suffix = { Text("Ton") }
+            modifier = Modifier.fillMaxWidth()
         )
+        Spacer(modifier = Modifier.height(10.dp))
 
-        Spacer(modifier = Modifier.height(16.dp))
+        OutlinedTextField(
+            value = costo,
+            onValueChange = { costo = it },
+            label = { Text("Costo de la Compra ($)") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(10.dp))
 
         OutlinedTextField(
             value = estado,
             onValueChange = { estado = it },
-            label = { Text("Estado Logístico (Ej. En tránsito)") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
+            label = { Text("Estado (Ej. En planta)") },
+            modifier = Modifier.fillMaxWidth()
         )
 
-        // Uso del color de error del tema native de M3
-        if (error.isNotEmpty()) {
-            Text(text = error, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 8.dp))
-        }
+        Text(text = error, color = Color.Red, modifier = Modifier.padding(top = 8.dp))
 
-        Spacer(modifier = Modifier.weight(1f)) // Empuja el botón hacia abajo
+        Spacer(modifier = Modifier.height(24.dp))
 
-        // NUEVO: Botón más grande y corporativo
         Button(
-            modifier = Modifier.fillMaxWidth().height(56.dp),
+            modifier = Modifier.fillMaxWidth().height(50.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2)),
             onClick = {
                 val tonValidadas = toneladas.toDoubleOrNull()
+                val costoValidado = costo.toDoubleOrNull()
 
-                if (proveedor.isEmpty() || variedad.isEmpty() || toneladas.isEmpty() || estado.isEmpty()) {
+                // Ya no validamos "variedad" porque al ser una lista cerrada nunca estará vacía
+                if (proveedor.isEmpty() || toneladas.isEmpty() || costo.isEmpty() || estado.isEmpty()) {
                     error = "Llena todos los campos."
-                } else if (tonValidadas == null || tonValidadas <= 0) {
-                    error = "Ingresa una cantidad de toneladas válida."
+                } else if (tonValidadas == null || costoValidado == null) {
+                    error = "Ingresa números válidos en Toneladas y Costo."
                 } else {
-                    dbHelper.insertCompra(proveedor, variedad, tonValidadas, estado)
-                    Toast.makeText(activity, "Compra registrada", Toast.LENGTH_SHORT).show()
+                    if (idEdit == -1) {
+                        dbHelper.insertCompra(proveedor, variedadSeleccionada, tonValidadas, costoValidado, tamanoSeleccionado, madurezSeleccionada, estado)
+                        Toast.makeText(activity, "Guardado exitosamente", Toast.LENGTH_SHORT).show()
+                    } else {
+                        dbHelper.updateCompra(idEdit, proveedor, variedadSeleccionada, tonValidadas, costoValidado, tamanoSeleccionado, madurezSeleccionada, estado)
+                        Toast.makeText(activity, "Actualizado exitosamente", Toast.LENGTH_SHORT).show()
+                    }
                     activity.finish()
                 }
             }
         ) {
-            Text("Registrar Compra", fontSize = 16.sp)
+            Text(if (idEdit != -1) "Actualizar" else "Registrar", fontSize = 18.sp, color = Color.White)
         }
     }
 }
