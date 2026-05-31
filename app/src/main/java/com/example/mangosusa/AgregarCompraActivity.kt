@@ -73,7 +73,7 @@ fun Formulario(activity: Activity, listaProveedores: List<String>) {
     var madurezSeleccionada by remember { mutableStateOf(if (madurezGuardada.isNullOrEmpty()) "Verde" else madurezGuardada) }
 
     // 5. NUEVO: ESTADO LOGÍSTICO
-    val listaEstados = listOf("Por Pagar", "Pagado", "Por Recolectar por parte del Transportista", "En Proceso de Envio", "En Proceso de Recepción", "Recepcion Completada", "Completado")
+    val listaEstados = listOf("Por Pagar", "Pagado", "Por Recolectar por parte del Transportista", "En Proceso de Envio", "En Proceso de Recepción", "Recepcion Completada", "Completadoo")
     var estadoExpandido by remember { mutableStateOf(false) }
     val estadoGuardado = intent.getStringExtra("ESTADO")
     var estadoSeleccionado by remember { mutableStateOf(if (estadoGuardado.isNullOrEmpty()) "En tránsito" else estadoGuardado) }
