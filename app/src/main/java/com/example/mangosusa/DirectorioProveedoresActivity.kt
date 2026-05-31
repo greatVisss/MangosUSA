@@ -24,7 +24,6 @@ import com.example.mangosusa.ui.theme.MangosUSATheme
 
 class DirectorioProveedoresActivity : ComponentActivity() {
     private lateinit var dbHelper: SqliteAuxiliar
-    // Guardamos la lista de proveedores
     private var proveedoresState = mutableStateOf<List<ProveedorInfo>>(emptyList())
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,7 +39,6 @@ class DirectorioProveedoresActivity : ComponentActivity() {
         }
     }
 
-    // Se actualiza la lista cada vez que abrimos esta pantalla
     override fun onResume() {
         super.onResume()
         proveedoresState.value = dbHelper.getTodosLosProveedores()
@@ -55,7 +53,6 @@ class DirectorioProveedoresActivity : ComponentActivity() {
             if (proveedoresState.value.isEmpty()) {
                 Text("No hay proveedores registrados aún.", color = Color.Gray)
             } else {
-                // Dibujamos la lista de tarjetas
                 LazyColumn {
                     items(proveedoresState.value) { prov ->
                         Card(
@@ -67,7 +64,6 @@ class DirectorioProveedoresActivity : ComponentActivity() {
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                // Datos del proveedor
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(prov.nombre, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                                     Text("Ubicación: ${prov.ubicacion}", color = Color.DarkGray)
@@ -75,10 +71,8 @@ class DirectorioProveedoresActivity : ComponentActivity() {
                                     Text("Teléfono: ${prov.telefono}", color = Color(0xFF1976D2))
                                 }
 
-                                // Botones de Editar y Borrar
                                 Row {
                                     IconButton(onClick = {
-                                        // Mandamos los datos a la pantalla de agregar para editarlos
                                         val intent = Intent(activity, AgregarProveedorActivity::class.java)
                                         intent.putExtra("ID", prov.id)
                                         intent.putExtra("NOMBRE", prov.nombre)
@@ -91,9 +85,7 @@ class DirectorioProveedoresActivity : ComponentActivity() {
                                     }
 
                                     IconButton(onClick = {
-                                        // Borramos el huerto de la base de datos
                                         dbHelper.deleteProveedor(prov.id)
-                                        // Recargamos la lista visual
                                         proveedoresState.value = dbHelper.getTodosLosProveedores()
                                     }) {
                                         Icon(Icons.Filled.Delete, contentDescription = "Borrar", tint = Color.Red)

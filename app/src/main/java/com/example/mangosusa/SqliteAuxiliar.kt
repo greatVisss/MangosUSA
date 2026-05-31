@@ -14,7 +14,6 @@ data class CompraMango(
     val madurez: String, val fecha: String, val estado: String
 )
 
-// NUEVO: Modelo para manejar los datos del directorio
 data class ProveedorInfo(
     val id: Int, val nombre: String, val ubicacion: String,
     val encargado: String, val telefono: String
@@ -41,7 +40,6 @@ class SqliteAuxiliar(contexto: Context) : SQLiteOpenHelper(contexto, "MangosDB.s
     // ==========================================
     //        FUNCIONES DE PROVEEDORES
     // ==========================================
-
     fun insertProveedor(nombre: String, ubicacion: String, encargado: String, telefono: String) {
         val db = this.writableDatabase
         val sql = "INSERT INTO proveedores (nombre, ubicacion, encargado, telefono) VALUES (?, ?, ?, ?)"
@@ -54,28 +52,18 @@ class SqliteAuxiliar(contexto: Context) : SQLiteOpenHelper(contexto, "MangosDB.s
         db.close()
     }
 
-    // NUEVA: Para leer todos los datos del huerto y mostrarlos en el directorio
     fun getTodosLosProveedores(): List<ProveedorInfo> {
         val lista = mutableListOf<ProveedorInfo>()
         val db = this.readableDatabase
         val cursor = db.rawQuery("SELECT * FROM proveedores", null)
         while (cursor.moveToNext()) {
-            lista.add(
-                ProveedorInfo(
-                    id = cursor.getInt(0),
-                    nombre = cursor.getString(1),
-                    ubicacion = cursor.getString(2),
-                    encargado = cursor.getString(3),
-                    telefono = cursor.getString(4)
-                )
-            )
+            lista.add(ProveedorInfo(cursor.getInt(0), cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getString(4)))
         }
         cursor.close()
         db.close()
         return lista
     }
 
-    // NUEVA: Para modificar un huerto
     fun updateProveedor(id: Int, nombre: String, ubicacion: String, encargado: String, telefono: String) {
         val db = this.writableDatabase
         val sql = "UPDATE proveedores SET nombre = ?, ubicacion = ?, encargado = ?, telefono = ? WHERE id = ?"
@@ -89,7 +77,6 @@ class SqliteAuxiliar(contexto: Context) : SQLiteOpenHelper(contexto, "MangosDB.s
         db.close()
     }
 
-    // NUEVA: Para borrar un huerto
     fun deleteProveedor(id: Int) {
         val db = this.writableDatabase
         val statement = db.compileStatement("DELETE FROM proveedores WHERE id = ?")
@@ -98,7 +85,6 @@ class SqliteAuxiliar(contexto: Context) : SQLiteOpenHelper(contexto, "MangosDB.s
         db.close()
     }
 
-    // Para la lista desplegable de la pantalla de compras
     fun getProveedores(): List<String> {
         val lista = mutableListOf<String>()
         val db = this.readableDatabase
@@ -112,9 +98,8 @@ class SqliteAuxiliar(contexto: Context) : SQLiteOpenHelper(contexto, "MangosDB.s
     }
 
     // ==========================================
-    //        FUNCIONES DE COMPRAS (Siguen igual)
+    //        FUNCIONES DE COMPRAS
     // ==========================================
-
     fun insertCompra(proveedor: String, variedad: String, toneladas: Double, costo: Double, tamano: String, madurez: String, estado: String) {
         val db = this.writableDatabase
         val fechaHoy = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())

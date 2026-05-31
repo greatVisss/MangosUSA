@@ -23,7 +23,6 @@ import com.example.mangosusa.ui.theme.MangosUSATheme
 
 class AgregarCompraActivity : ComponentActivity() {
     private lateinit var dbHelper: SqliteAuxiliar
-    // Variable global para que la lista se recargue al volver de la pantalla de proveedores
     private var listaProveedoresState = mutableStateOf<List<String>>(emptyList())
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,13 +32,12 @@ class AgregarCompraActivity : ComponentActivity() {
         setContent {
             MangosUSATheme {
                 Surface(modifier = Modifier.fillMaxSize().background(Color(0xFFEFEFEF))) {
-                    Formulario(this, listaProveedoresState.value) // Pasamos la lista al diseño
+                    Formulario(this, listaProveedoresState.value)
                 }
             }
         }
     }
 
-    // Se ejecuta cada que esta pantalla aparece (incluso cuando regresas de agregar un proveedor)
     override fun onResume() {
         super.onResume()
         listaProveedoresState.value = dbHelper.getProveedores()
@@ -52,64 +50,60 @@ fun Formulario(activity: Activity, listaProveedores: List<String>) {
     val intent = activity.intent
     val idEdit = intent.getIntExtra("ID", -1)
 
-    // --- VARIABLES DE LISTAS ---
-    var variedadExpandida by remember { mutableStateOf(false) }
-    val variedadGuardada = intent.getStringExtra("VARIEDAD")
-    var variedadSeleccionada by remember { mutableStateOf(if (variedadGuardada.isNullOrEmpty()) "Ataulfo" else variedadGuardada) }
+    // --- VARIABLES DE LISTAS DESPLEGABLES ---
 
-    var tamanoExpandido by remember { mutableStateOf(false) }
-    val tamanoGuardado = intent.getStringExtra("TAMANO")
-    var tamanoSeleccionado by remember { mutableStateOf(if (tamanoGuardado.isNullOrEmpty()) "Mediano" else tamanoGuardado) }
-
-    var madurezExpandida by remember { mutableStateOf(false) }
-    val madurezGuardada = intent.getStringExtra("MADUREZ")
-    var madurezSeleccionada by remember { mutableStateOf(if (madurezGuardada.isNullOrEmpty()) "Verde" else madurezGuardada) }
-
-    // --- NUEVO: LISTA DE PROVEEDORES ---
+    // 1. PROVEEDORES
     var proveedorExpandido by remember { mutableStateOf(false) }
     val proveedorGuardado = intent.getStringExtra("PROVEEDOR")
     var proveedorSeleccionado by remember { mutableStateOf(if (proveedorGuardado.isNullOrEmpty()) "Seleccione uno..." else proveedorGuardado) }
 
+    // 2. VARIEDAD
+    var variedadExpandida by remember { mutableStateOf(false) }
+    val variedadGuardada = intent.getStringExtra("VARIEDAD")
+    var variedadSeleccionada by remember { mutableStateOf(if (variedadGuardada.isNullOrEmpty()) "Ataulfo" else variedadGuardada) }
+
+    // 3. TAMAÑO
+    var tamanoExpandido by remember { mutableStateOf(false) }
+    val tamanoGuardado = intent.getStringExtra("TAMANO")
+    var tamanoSeleccionado by remember { mutableStateOf(if (tamanoGuardado.isNullOrEmpty()) "Mediano" else tamanoGuardado) }
+
+    // 4. MADUREZ
+    var madurezExpandida by remember { mutableStateOf(false) }
+    val madurezGuardada = intent.getStringExtra("MADUREZ")
+    var madurezSeleccionada by remember { mutableStateOf(if (madurezGuardada.isNullOrEmpty()) "Verde" else madurezGuardada) }
+
+    // 5. NUEVO: ESTADO LOGÍSTICO
+    val listaEstados = listOf("Por Pagar", "Pagado", "Por Recolectar por parte del Transportista", "En Proceso de Envio", "En Proceso de Recepción", "Recepcion Completada", "Completado")
+    var estadoExpandido by remember { mutableStateOf(false) }
+    val estadoGuardado = intent.getStringExtra("ESTADO")
+    var estadoSeleccionado by remember { mutableStateOf(if (estadoGuardado.isNullOrEmpty()) "En tránsito" else estadoGuardado) }
+
     // --- TEXTOS NORMALES ---
-    var estado by remember { mutableStateOf(intent.getStringExtra("ESTADO") ?: "") }
     var toneladas by remember { mutableStateOf(if (idEdit != -1) intent.getDoubleExtra("TONELADAS", 0.0).toString() else "") }
     var costo by remember { mutableStateOf(if (idEdit != -1) intent.getDoubleExtra("COSTO", 0.0).toString() else "") }
     var error by remember { mutableStateOf("") }
 
     val listaVariedades = listOf("Ataulfo", "Manila", "Tommy Atkins", "Keitt", "Kent", "Haden", "Alphonso")
     val listaTamanos = listOf("Chico", "Mediano", "Grande")
-    val listaMadurez = listOf("Verde", "Medio", "Maduro")
+    val listaMadurez = listOf("Verde", "Pintón", "Maduro")
 
     Column(modifier = Modifier.padding(24.dp).verticalScroll(rememberScrollState())) {
         Text(if (idEdit != -1) "Modificar Compra" else "Registrar Compra", fontSize = 24.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(24.dp))
 
-        // --- CÓDIGO NUEVO PARA EL MENÚ DE PROVEEDORES ---
+        // SECTOR / PROVEEDOR
         Text("Sector/Proveedor:", color = Color.Gray, fontSize = 14.sp)
         Box(modifier = Modifier.fillMaxWidth()) {
-            OutlinedButton(
-                onClick = { proveedorExpandido = true },
-                modifier = Modifier.fillMaxWidth()
-            ) {
+            OutlinedButton(onClick = { proveedorExpandido = true }, modifier = Modifier.fillMaxWidth()) {
                 Text(proveedorSeleccionado)
             }
-            DropdownMenu(
-                expanded = proveedorExpandido,
-                onDismissRequest = { proveedorExpandido = false }
-            ) {
+            DropdownMenu(expanded = proveedorExpandido, onDismissRequest = { proveedorExpandido = false }) {
                 listaProveedores.forEach { opcion ->
-                    DropdownMenuItem(
-                        text = { Text(opcion) },
-                        onClick = {
-                            proveedorSeleccionado = opcion
-                            proveedorExpandido = false
-                        }
-                    )
+                    DropdownMenuItem(text = { Text(opcion) }, onClick = { proveedorSeleccionado = opcion; proveedorExpandido = false })
                 }
             }
         }
 
-        // Botón para ir a la 3ra ventana y crear un proveedor nuevo
         TextButton(onClick = {
             val intentNuevo = Intent(activity, AgregarProveedorActivity::class.java)
             activity.startActivity(intentNuevo)
@@ -119,6 +113,7 @@ fun Formulario(activity: Activity, listaProveedores: List<String>) {
 
         Spacer(modifier = Modifier.height(10.dp))
 
+        // VARIEDAD
         Text("Variedad de Mango:", color = Color.Gray, fontSize = 14.sp)
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedButton(onClick = { variedadExpandida = true }, modifier = Modifier.fillMaxWidth()) {
@@ -132,6 +127,7 @@ fun Formulario(activity: Activity, listaProveedores: List<String>) {
         }
         Spacer(modifier = Modifier.height(10.dp))
 
+        // TAMAÑO
         Text("Tamaño del Mango:", color = Color.Gray, fontSize = 14.sp)
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedButton(onClick = { tamanoExpandido = true }, modifier = Modifier.fillMaxWidth()) {
@@ -145,6 +141,7 @@ fun Formulario(activity: Activity, listaProveedores: List<String>) {
         }
         Spacer(modifier = Modifier.height(10.dp))
 
+        // MADUREZ
         Text("Madurez del Mango:", color = Color.Gray, fontSize = 14.sp)
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedButton(onClick = { madurezExpandida = true }, modifier = Modifier.fillMaxWidth()) {
@@ -158,6 +155,21 @@ fun Formulario(activity: Activity, listaProveedores: List<String>) {
         }
         Spacer(modifier = Modifier.height(10.dp))
 
+        // NUEVO: LISTA DE ESTADO LOGÍSTICO (Sustituye al OutlinedTextField de antes)
+        Text("Estado Logístico:", color = Color.Gray, fontSize = 14.sp)
+        Box(modifier = Modifier.fillMaxWidth()) {
+            OutlinedButton(onClick = { estadoExpandido = true }, modifier = Modifier.fillMaxWidth()) {
+                Text(estadoSeleccionado)
+            }
+            DropdownMenu(expanded = estadoExpandido, onDismissRequest = { estadoExpandido = false }) {
+                listaEstados.forEach { opcion ->
+                    DropdownMenuItem(text = { Text(opcion) }, onClick = { estadoSeleccionado = opcion; estadoExpandido = false })
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // TONELADAS
         OutlinedTextField(
             value = toneladas,
             onValueChange = { toneladas = it },
@@ -167,6 +179,7 @@ fun Formulario(activity: Activity, listaProveedores: List<String>) {
         )
         Spacer(modifier = Modifier.height(10.dp))
 
+        // COSTO
         OutlinedTextField(
             value = costo,
             onValueChange = { costo = it },
@@ -174,19 +187,12 @@ fun Formulario(activity: Activity, listaProveedores: List<String>) {
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier.fillMaxWidth()
         )
-        Spacer(modifier = Modifier.height(10.dp))
-
-        OutlinedTextField(
-            value = estado,
-            onValueChange = { estado = it },
-            label = { Text("Estado (Ej. En planta)") },
-            modifier = Modifier.fillMaxWidth()
-        )
 
         Text(text = error, color = Color.Red, modifier = Modifier.padding(top = 8.dp))
 
         Spacer(modifier = Modifier.height(24.dp))
 
+        // BOTÓN DE GUARDAR
         Button(
             modifier = Modifier.fillMaxWidth().height(50.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2)),
@@ -194,16 +200,18 @@ fun Formulario(activity: Activity, listaProveedores: List<String>) {
                 val tonValidadas = toneladas.toDoubleOrNull()
                 val costoValidado = costo.toDoubleOrNull()
 
-                if (proveedorSeleccionado == "Seleccione uno..." || toneladas.isEmpty() || costo.isEmpty() || estado.isEmpty()) {
+                if (proveedorSeleccionado == "Seleccione uno..." || toneladas.isEmpty() || costo.isEmpty()) {
                     error = "Llena todos los campos."
                 } else if (tonValidadas == null || costoValidado == null) {
                     error = "Ingresa números válidos en Toneladas y Costo."
                 } else {
                     if (idEdit == -1) {
-                        dbHelper.insertCompra(proveedorSeleccionado, variedadSeleccionada, tonValidadas, costoValidado, tamanoSeleccionado, madurezSeleccionada, estado)
+                        // Enviamos a la BD el estado que se haya seleccionado en la lista
+                        dbHelper.insertCompra(proveedorSeleccionado, variedadSeleccionada, tonValidadas, costoValidado, tamanoSeleccionado, madurezSeleccionada, estadoSeleccionado)
                         Toast.makeText(activity, "Guardado exitosamente", Toast.LENGTH_SHORT).show()
                     } else {
-                        dbHelper.updateCompra(idEdit, proveedorSeleccionado, variedadSeleccionada, tonValidadas, costoValidado, tamanoSeleccionado, madurezSeleccionada, estado)
+                        // Enviamos a la BD el estado que se haya seleccionado en la lista
+                        dbHelper.updateCompra(idEdit, proveedorSeleccionado, variedadSeleccionada, tonValidadas, costoValidado, tamanoSeleccionado, madurezSeleccionada, estadoSeleccionado)
                         Toast.makeText(activity, "Actualizado exitosamente", Toast.LENGTH_SHORT).show()
                     }
                     activity.finish()
