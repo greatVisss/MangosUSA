@@ -7,31 +7,29 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+// --- MODELOS DE DATOS ---
 data class CompraMango(
-    val id: Int,
-    val proveedor: String,
-    val variedad: String,
-    val toneladas: Double,
-    val costo: Double,
-    val tamano: String,
-    val madurez: String,
-    val fecha: String,
-    val estado: String
+    val id: Int, val proveedor: String, val variedad: String,
+    val toneladas: Double, val costo: Double, val tamano: String,
+    val madurez: String, val fecha: String, val estado: String
 )
 
-class SqliteAuxiliar(contexto: Context) : SQLiteOpenHelper(contexto, "MangosDB.sqlite", null, 7) {
+// NUEVO: Modelo para manejar los datos del directorio
+data class ProveedorInfo(
+    val id: Int, val nombre: String, val ubicacion: String,
+    val encargado: String, val telefono: String
+)
+
+class SqliteAuxiliar(contexto: Context) : SQLiteOpenHelper(contexto, "MangosDB.sqlite", null, 8) {
 
     override fun onCreate(db: SQLiteDatabase?) {
-        // 1. Tabla de compras
         val queryCompras = "CREATE TABLE compras (id INTEGER PRIMARY KEY AUTOINCREMENT, proveedor TEXT, variedad TEXT, toneladas REAL, costo REAL, tamano TEXT, madurez TEXT, fecha TEXT, estado TEXT)"
         db?.execSQL(queryCompras)
 
-        // 2. NUEVA TABLA: Proveedores
-        val queryProveedores = "CREATE TABLE proveedores (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT)"
+        val queryProveedores = "CREATE TABLE proveedores (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT, ubicacion TEXT, encargado TEXT, telefono TEXT)"
         db?.execSQL(queryProveedores)
 
-        // 3. Insertamos un proveedor de prueba para que la lista no empiece vacía
-        db?.execSQL("INSERT INTO proveedores (nombre) VALUES ('Huerta San José')")
+        db?.execSQL("INSERT INTO proveedores (nombre, ubicacion, encargado, telefono) VALUES ('Huerta San José', 'Michoacán', 'José Pérez', '555-1234')")
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
@@ -40,16 +38,67 @@ class SqliteAuxiliar(contexto: Context) : SQLiteOpenHelper(contexto, "MangosDB.s
         onCreate(db)
     }
 
-    // --- FUNCIONES PARA LA NUEVA TABLA DE PROVEEDORES ---
-    fun insertProveedor(nombre: String) {
+    // ==========================================
+    //        FUNCIONES DE PROVEEDORES
+    // ==========================================
+
+    fun insertProveedor(nombre: String, ubicacion: String, encargado: String, telefono: String) {
         val db = this.writableDatabase
-        val sql = "INSERT INTO proveedores (nombre) VALUES (?)"
+        val sql = "INSERT INTO proveedores (nombre, ubicacion, encargado, telefono) VALUES (?, ?, ?, ?)"
         val statement = db.compileStatement(sql)
         statement.bindString(1, nombre)
+        statement.bindString(2, ubicacion)
+        statement.bindString(3, encargado)
+        statement.bindString(4, telefono)
         statement.executeInsert()
         db.close()
     }
 
+    // NUEVA: Para leer todos los datos del huerto y mostrarlos en el directorio
+    fun getTodosLosProveedores(): List<ProveedorInfo> {
+        val lista = mutableListOf<ProveedorInfo>()
+        val db = this.readableDatabase
+        val cursor = db.rawQuery("SELECT * FROM proveedores", null)
+        while (cursor.moveToNext()) {
+            lista.add(
+                ProveedorInfo(
+                    id = cursor.getInt(0),
+                    nombre = cursor.getString(1),
+                    ubicacion = cursor.getString(2),
+                    encargado = cursor.getString(3),
+                    telefono = cursor.getString(4)
+                )
+            )
+        }
+        cursor.close()
+        db.close()
+        return lista
+    }
+
+    // NUEVA: Para modificar un huerto
+    fun updateProveedor(id: Int, nombre: String, ubicacion: String, encargado: String, telefono: String) {
+        val db = this.writableDatabase
+        val sql = "UPDATE proveedores SET nombre = ?, ubicacion = ?, encargado = ?, telefono = ? WHERE id = ?"
+        val statement = db.compileStatement(sql)
+        statement.bindString(1, nombre)
+        statement.bindString(2, ubicacion)
+        statement.bindString(3, encargado)
+        statement.bindString(4, telefono)
+        statement.bindLong(5, id.toLong())
+        statement.executeUpdateDelete()
+        db.close()
+    }
+
+    // NUEVA: Para borrar un huerto
+    fun deleteProveedor(id: Int) {
+        val db = this.writableDatabase
+        val statement = db.compileStatement("DELETE FROM proveedores WHERE id = ?")
+        statement.bindLong(1, id.toLong())
+        statement.executeUpdateDelete()
+        db.close()
+    }
+
+    // Para la lista desplegable de la pantalla de compras
     fun getProveedores(): List<String> {
         val lista = mutableListOf<String>()
         val db = this.readableDatabase
@@ -61,9 +110,11 @@ class SqliteAuxiliar(contexto: Context) : SQLiteOpenHelper(contexto, "MangosDB.s
         db.close()
         return lista
     }
-    // ----------------------------------------------------
 
-    // --- FUNCIONES DE COMPRAS (Se quedan igual) ---
+    // ==========================================
+    //        FUNCIONES DE COMPRAS (Siguen igual)
+    // ==========================================
+
     fun insertCompra(proveedor: String, variedad: String, toneladas: Double, costo: Double, tamano: String, madurez: String, estado: String) {
         val db = this.writableDatabase
         val fechaHoy = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
