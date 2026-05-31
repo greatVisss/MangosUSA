@@ -11,6 +11,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -55,28 +58,28 @@ fun Formulario(activity: Activity, listaProveedores: List<String>) {
     // 1. PROVEEDORES
     var proveedorExpandido by remember { mutableStateOf(false) }
     val proveedorGuardado = intent.getStringExtra("PROVEEDOR")
-    var proveedorSeleccionado by remember { mutableStateOf(if (proveedorGuardado.isNullOrEmpty()) "Seleccione uno..." else proveedorGuardado) }
+    var proveedorSeleccionado by remember { mutableStateOf(if (proveedorGuardado.isNullOrEmpty()) "Seleciona una opción" else proveedorGuardado) }
 
     // 2. VARIEDAD
     var variedadExpandida by remember { mutableStateOf(false) }
     val variedadGuardada = intent.getStringExtra("VARIEDAD")
-    var variedadSeleccionada by remember { mutableStateOf(if (variedadGuardada.isNullOrEmpty()) "Ataulfo" else variedadGuardada) }
+    var variedadSeleccionada by remember { mutableStateOf(if (variedadGuardada.isNullOrEmpty()) "Seleciona una opción" else variedadGuardada) }
 
     // 3. TAMAÑO
     var tamanoExpandido by remember { mutableStateOf(false) }
     val tamanoGuardado = intent.getStringExtra("TAMANO")
-    var tamanoSeleccionado by remember { mutableStateOf(if (tamanoGuardado.isNullOrEmpty()) "Mediano" else tamanoGuardado) }
+    var tamanoSeleccionado by remember { mutableStateOf(if (tamanoGuardado.isNullOrEmpty()) "Seleciona una opción" else tamanoGuardado) }
 
     // 4. MADUREZ
     var madurezExpandida by remember { mutableStateOf(false) }
     val madurezGuardada = intent.getStringExtra("MADUREZ")
-    var madurezSeleccionada by remember { mutableStateOf(if (madurezGuardada.isNullOrEmpty()) "Verde" else madurezGuardada) }
+    var madurezSeleccionada by remember { mutableStateOf(if (madurezGuardada.isNullOrEmpty()) "Seleciona una opción" else madurezGuardada) }
 
     // 5. NUEVO: ESTADO LOGÍSTICO
     val listaEstados = listOf("Por Pagar", "Pagado", "Por Recolectar por parte del Transportista", "En Proceso de Envio", "En Proceso de Recepción", "Recepcion Completada", "Completadoo")
     var estadoExpandido by remember { mutableStateOf(false) }
     val estadoGuardado = intent.getStringExtra("ESTADO")
-    var estadoSeleccionado by remember { mutableStateOf(if (estadoGuardado.isNullOrEmpty()) "En tránsito" else estadoGuardado) }
+    var estadoSeleccionado by remember { mutableStateOf(if (estadoGuardado.isNullOrEmpty()) "Seleciona una opción" else estadoGuardado) }
 
     // --- TEXTOS NORMALES ---
     var toneladas by remember { mutableStateOf(if (idEdit != -1) intent.getDoubleExtra("TONELADAS", 0.0).toString() else "") }
@@ -103,12 +106,17 @@ fun Formulario(activity: Activity, listaProveedores: List<String>) {
                 }
             }
         }
-
+        //se decidio en vez de solo colocar texto, tambien un icono
         TextButton(onClick = {
             val intentNuevo = Intent(activity, AgregarProveedorActivity::class.java)
             activity.startActivity(intentNuevo)
         }) {
-            Text("+ Registrar nuevo proveedor", color = Color(0xFF1976D2))
+            Icon(
+                imageVector = Icons.Filled.AddCircle,
+                contentDescription = "Nuevo Proveedor",
+                modifier = Modifier.size(40.dp),
+            )
+            Text("Nuevo proveedor", fontSize = 15.sp)
         }
 
         Spacer(modifier = Modifier.height(10.dp))
@@ -173,7 +181,7 @@ fun Formulario(activity: Activity, listaProveedores: List<String>) {
         OutlinedTextField(
             value = toneladas,
             onValueChange = { toneladas = it },
-            label = { Text("Toneladas (Ej. 10.5)") },
+            label = { Text("Toneladas") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier.fillMaxWidth()
         )
@@ -183,7 +191,7 @@ fun Formulario(activity: Activity, listaProveedores: List<String>) {
         OutlinedTextField(
             value = costo,
             onValueChange = { costo = it },
-            label = { Text("Costo de la Compra ($)") },
+            label = { Text("Costo de la Compra ($) en MXN") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier.fillMaxWidth()
         )
@@ -218,7 +226,24 @@ fun Formulario(activity: Activity, listaProveedores: List<String>) {
                 }
             }
         ) {
-            Text(if (idEdit != -1) "Actualizar" else "Registrar", fontSize = 18.sp, color = Color.White)
+                if (idEdit != -1) {
+                    Icon(
+                        imageVector = Icons.Filled.Refresh, // Es el ícono de un círculo con un símbolo de '+'
+                        contentDescription = "Registrar",
+                        modifier = Modifier.size(40.dp), // Lo hacemos grande (40.dp) para que parezca un título
+                    )
+                } else {
+                    // en vez de usar el texto se colca un icno de agregar
+                    Icon(
+                        imageVector = Icons.Filled.AddCircle, // Es el ícono de un círculo con un símbolo de '+'
+                        contentDescription = "Registrar",
+                        modifier = Modifier.size(40.dp), // Lo hacemos grande (40.dp) para que parezca un título
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+            //se iba a usar esto para el texto, pero al final fue por icono
+            // Text(if (idEdit != -1) "Actualizar" else "Registrar", fontSize = 18.sp, color = Color.White)
         }
     }
 }

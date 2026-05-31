@@ -34,31 +34,29 @@ class InicioActivity : ComponentActivity() {
 
 @Composable
 fun PantallaInicio(activity: Activity) {
-    // Column alineada al centro para que todo quede en medio de la pantalla
+    // Column alineada al centro
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White), // Fondo blanco limpio
+            .background(Color.White),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-
-        // --- LA IMAGEN REPRESENTATIVA ---
-        // Por ahora usamos la imagen por defecto de Android para que compile.
+        //imagen
         Image(
-            painter = painterResource(id = R.drawable.ic_launcher_foreground),
+            painter = painterResource(id = R.drawable.mango),
             contentDescription = "Logo de la empresa",
             modifier = Modifier.size(180.dp)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // --- EL NOMBRE DE LA COMPAÑÍA ---
+        // nombre
         Text(
             text = "Mangos USA",
             fontSize = 40.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF1976D2) // Azul corporativo
+            color = Color(0xFF1976D2) // es un azul en otro formato admitido
         )
         Text(
             text = "Sistema de Control Logístico",
@@ -68,16 +66,16 @@ fun PantallaInicio(activity: Activity) {
 
         Spacer(modifier = Modifier.height(64.dp))
 
-        // --- EL BOTÓN DE ACCEDER ---
+        //boton para iniciar
         Button(
             modifier = Modifier.width(220.dp).height(55.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)), // Botón verde
             onClick = {
-                // Viajamos a la pantalla principal
+                // se va a la pantalla principal
                 val intent = Intent(activity, MainActivity::class.java)
                 activity.startActivity(intent)
 
-                // Finalizamos esta pantalla de inicio para que, si el usuario presiona "Atrás",
+                // el activity.finish es para finalizar esta pantalla de inicio para que el usuario al regresarse,
                 // se salga de la app en lugar de volver a esta pantalla.
                 activity.finish()
             }

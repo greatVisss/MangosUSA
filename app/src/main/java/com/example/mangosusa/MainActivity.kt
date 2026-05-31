@@ -13,8 +13,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -43,7 +45,7 @@ class MainActivity : ComponentActivity() {
                             onClick = { startActivity(Intent(this, AgregarCompraActivity::class.java)) },
                             containerColor = Color(0xFF1976D2)
                         ) {
-                            Icon(Icons.Filled.Add, contentDescription = "Agregar", tint = Color.White)
+                            Icon(Icons.Filled.AddCircle, contentDescription = "Agregar", tint = Color.White)
                         }
                     }
                 ) { padding ->
@@ -136,7 +138,7 @@ class MainActivity : ComponentActivity() {
                 .padding(padding)
                 .padding(16.dp)
         ) {
-            Text("Dashboard: Mangos USA", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+            Text("Tablero: Mangos USA", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Black)
             Spacer(modifier = Modifier.height(16.dp))
 
             Card(
@@ -150,13 +152,13 @@ class MainActivity : ComponentActivity() {
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Avance Diario de Acopio", color = Color.Gray, fontSize = 14.sp)
+                        Text("Compra Diaria de Mangos", color = Color.Gray, fontSize = 14.sp)
 
                         IconButton(onClick = {
                             textoNuevaMeta = metaDiaria.toString()
                             mostrarDialogoMeta = true
                         }) {
-                            Icon(Icons.Filled.Edit, contentDescription = "Editar Meta", tint = Color.Gray)
+                            Icon(Icons.Filled.Settings, contentDescription = "Editar Meta", tint = Color.Gray)
                         }
                     }
 
@@ -182,7 +184,7 @@ class MainActivity : ComponentActivity() {
             )
 
             Spacer(modifier = Modifier.height(8.dp))
-            Text("Entregas de Hoy", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text("Pedidos del Día", fontSize = 18.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(8.dp))
 
             LazyColumn {
@@ -200,16 +202,14 @@ class MainActivity : ComponentActivity() {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(compra.proveedor, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                                     Text("Mango: ${compra.variedad} (${compra.tamano})", color = Color.DarkGray)
-                                    Text("Madurez: ${compra.madurez}", color = Color.Gray)
-                                    Text("Estado: ${compra.estado}", color = Color.Gray)
-
-                                    // --- AQUÍ MOSTRAMOS LA HORA DE REGISTRO ---
+                                    Text("Madurez: ${compra.madurez}", color = Color.Gray, fontWeight = FontWeight.Bold)
+                                    Text("Estado: ${compra.estado}", color = Color.Gray, fontWeight = FontWeight.Bold)
                                     Text("Registro: ${compra.fecha} a las ${compra.hora}", color = Color.LightGray, fontSize = 12.sp)
                                 }
 
                                 Column(horizontalAlignment = Alignment.End) {
-                                    Text("${compra.toneladas} Ton", fontSize = 16.sp, color = Color(0xFF1976D2), fontWeight = FontWeight.Bold)
-                                    Text("Costo: $${compra.costo}", fontSize = 14.sp, color = Color(0xFF4CAF50))
+                                    Text("${compra.toneladas} Ton", fontSize = 16.sp, color = Color.Blue, fontWeight = FontWeight.Bold)
+                                    Text("Costo: $${compra.costo}", fontSize = 14.sp, color = Color.Green)
 
                                     Row {
                                         IconButton(onClick = {
@@ -222,10 +222,10 @@ class MainActivity : ComponentActivity() {
                                             intent.putExtra("TAMANO", compra.tamano)
                                             intent.putExtra("MADUREZ", compra.madurez)
                                             intent.putExtra("ESTADO", compra.estado)
-                                            // No mandamos la hora porque no es algo que se edite, el sistema la guarda sola
                                             startActivity(intent)
                                         }) {
-                                            Icon(Icons.Filled.Edit, contentDescription = "Editar", tint = Color.Gray)
+                                            //Este es el icono de editar que esta ya en android studio
+                                            Icon(Icons.Filled.Settings, contentDescription = "Editar", tint = Color.Gray)
                                         }
 
                                         IconButton(onClick = {
