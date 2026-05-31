@@ -31,7 +31,7 @@ class SqliteAuxiliar(contexto: Context) : SQLiteOpenHelper(contexto, "MangosDB.s
         val queryProveedores = "CREATE TABLE proveedores (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT, ubicacion TEXT, encargado TEXT, telefono TEXT)"
         db?.execSQL(queryProveedores)
 
-        db?.execSQL("INSERT INTO proveedores (nombre, ubicacion, encargado, telefono) VALUES ('Huerta San José', 'Michoacán', 'José Pérez', '555-1234')")
+        db?.execSQL("INSERT INTO proveedores (nombre, ubicacion, encargado, telefono) VALUES ('Huerta San José', 'Michoacán', 'José Pérez', '555-1234'), ('Huerta Mría', 'Oaxaca', 'Maria Delfina', '555-98456')")
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {

@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -81,7 +82,7 @@ class DirectorioProveedoresActivity : ComponentActivity() {
                                         intent.putExtra("TELEFONO", prov.telefono)
                                         activity.startActivity(intent)
                                     }) {
-                                        Icon(Icons.Filled.Edit, contentDescription = "Editar", tint = Color.Gray)
+                                        Icon(Icons.Filled.Settings, contentDescription = "Editar", tint = Color.Gray)
                                     }
 
                                     IconButton(onClick = {
